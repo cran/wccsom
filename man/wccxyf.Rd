@@ -1,21 +1,28 @@
-\name{wccsom}
-\alias{wccsom}
-\title{Mapping spectra with self-organising maps}
+\name{wccxyf}
+\alias{wccxyf}
+\title{Supervised mapping of spectra with self-organising maps}
 \description{
-  Self-organising maps for mapping high-dimensional spectra or patterns
-  to 2D; instead of Euclidean distance, the weighted cross correlation
-  (WCC) similarity measure is used. Modelled after the SOM function in
-  package 'class'. wccsom takes 'continous' patterns, i.e. datapoints
-  are equidistant.
+  Supervised self-organising maps for mapping high-dimensional spectra
+  or patterns to 2D; instead of Euclidean distance, the weighted cross
+  correlation (WCC) similarity measure is used. Modelled after the SOM
+  function in package 'class'. wccxyf takes 'continous' patterns,
+  i.e. datapoints are equidistant.
+
+  At this point, no facilities are implemented for growing networks or
+  k-means-like fine-tuning of the maps, such as in function \code{wccsom}.
 }
 \usage{
-wccsom(data, grid=somgrid(), rlen = 100, alpha = c(0.05, 0.01),
-       radius = quantile(nhbrdist, 0.7), init, nhbrdist, trwidth = 20,
-       toroidal = FALSE, FineTune = TRUE, keep.data = TRUE)
+wccxyf(data, Y, grid=somgrid(), rlen = 100, alpha = c(0.05, 0.01),
+       radius = quantile(nhbrdist, 0.67), xweight = 0.5, trwidth = 20,
+       toroidal = FALSE, keep.data = TRUE)
 }
 \arguments{
   \item{data}{Spectra or patterns to be mapped: a matrix, with each row
     representing a compound.}
+  \item{Y}{Property for each pattern, either a numerical vector or
+    matrix, or a class matrix. In the latter case, the Tanimoto distance
+    is used for Y; in all other cases (also for combinations of
+    numerical and class properties) the Euclidean distance is used.} 
   \item{grid}{A grid for the representatives: see 'somgrid'.}
   \item{rlen}{the number of times the complete data set will be
     presented to the network.}
@@ -27,14 +34,12 @@ wccsom(data, grid=somgrid(), rlen = 100, alpha = c(0.05, 0.01),
     such a way that after one-third of the updates only the winning unit
     is updated. The default is to start with a
     value that covers 2/3 of all units.}
-  \item{init}{the initial representatives, represented as a matrix.  If
-    missing, chosen (without replacement) randomly from 'data'.}
-  \item{nhbrdist}{optionally, the distance matrix for the units.}
+  \item{xweight}{weight of X matrix in determining the distances of
+    objects to units.}
   \item{trwidth}{width of the triangle function used in the WCC
     measure, given in the number of data points.}
   \item{toroidal}{if TRUE, then the edges of the map are joined. Note
     that in a toroidal hexagonal map, the number of rows must be even.}
-  \item{FineTune}{apply kmeans for fine-tuning the codebook vectors.}
   \item{keep.data}{store training data and their mapping in the network.}
 }
 \value{
@@ -53,17 +58,16 @@ wccsom(data, grid=somgrid(), rlen = 100, alpha = c(0.05, 0.01),
   \item{data.acors}{WAC values for training data. Only if
     \code{keep.data} equals TRUE.}
 }
-\references{R. Wehrens, W.J. Melssen, L.M.C. Buydens and R. de Gelder.
-Representing Structural Databases in a Self-Organising Map.
-Acta Cryst. B61, 548-557, 2005.}
+\references{FIXME: this page is a copy of wccsom, should be edited further}
 \author{Ron Wehrens}
 
 \seealso{\code{\link{SOM}}, \code{\link{plot.wccsom}},
-  \code{\link{wccxyf}}, \code{\link{wcc}}}
+  \code{\link{wccsom}}, \code{\link{wcc}}}
 \examples{
-data(cepha)
-gr <- somgrid(3,3, "hexagonal")
+data(degelder)
+gr <- somgrid(5, 5, "hexagonal")
 set.seed(7)
-x <- wccsom(cepha$patterns, grid=gr, trwidth=20, rlen=100)
+x <- wccxyf(degelder$patterns, degelder$properties[,"cell.vol"],
+            grid=gr, trwidth=20, rlen=100)
 }
 \keyword{classif}

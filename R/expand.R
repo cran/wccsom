@@ -1,4 +1,3 @@
-
 ## create a new grid, same topology, twice as large
 ## interpolate for new units
 
@@ -19,10 +18,10 @@ expand.som <- function(somnet, plotit=FALSE)
   colnrs <- (1:noldcodes) %% oldxdim
   colnrs[colnrs == 0] <- oldxdim ## start from 1
   rownrs <- floor(((1:noldcodes)-1) / oldxdim) ## start from 0
-  newindices <- colnrs*2-1 + rownrs * 2 * xd
+  newindices <- rownrs*2*xd + colnrs * 2 - 1
   acors <- rep(-1, ncodes)
-  codes <- matrix(0, nrow(somnet$codes), ncodes)
-  codes[,newindices] <- somnet$codes
+  codes <- matrix(0, ncodes, ncol(somnet$codes))
+  codes[newindices,] <- somnet$codes
   acors[newindices] <- somnet$acors
   mycolors <- rep(0, ncodes)
   mycolors[newindices] <- 1
@@ -34,8 +33,8 @@ expand.som <- function(somnet, plotit=FALSE)
       closeones <- order(nhbrdist[i, newindices])[1:nclose]
       closedists <- nhbrdist[i, newindices[closeones]]
       normfactor <- sum(1/closedists)
-      codes[,i] <- rowSums(sweep(codes[,newindices[closeones]],
-                                 1,
+      codes[i,] <- colSums(sweep(codes[newindices[closeones],],
+                                 2,
                                  closedists,
                                  FUN="*")) / normfactor
     }
@@ -44,9 +43,7 @@ expand.som <- function(somnet, plotit=FALSE)
   if (plotit) cat("calculating autocovariances...")
   trwdth <- somnet$trwdth
   wghts <- 1 - (0:trwdth)/trwdth
-  for (i in 1:ncodes) {
-    if (acors[i] < 0) acors[i] <- wac(codes[,i], trwdth=trwdth, wghts=wghts)
-  }
+  acors <- wacmat(codes, trwdth=trwdth, wghts=wghts)
 
   if (plotit) cat("ready.\n")
 

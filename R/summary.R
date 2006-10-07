@@ -1,6 +1,6 @@
-
 ## summary gives info about either a SOM unit or an object
-summary.WCCSOM <- function(object,
+
+summary.wccsom <- function(object,
                            type=c("unit", "object", "smoothness", "quality"),
                            nr, labels, data = object$data,
                            classif = object$unit.classif,
@@ -38,7 +38,7 @@ summary.WCCSOM <- function(object,
 
            if (is.null(object$wccs)) {
              for (i in seq(along=objs))
-               summtable[i,1] <- wcc(data[objs[i],], codes[,nr],
+               summtable[i,1] <- wcc(data[objs[i],], codes[nr,],
                                      object$trwdth)
            } else {
              summtable[,1] <- wccs[objs]
@@ -94,13 +94,13 @@ summary.WCCSOM <- function(object,
            invisible(summtable)
          },
          smoothness = {
-           nunits <- ncol(object$codes)
+           nunits <- nrow(object$codes)
            wcctab <- matrix(0, nunits, nunits)
            wghts <- 1 - (0:object$trwdth)/object$trwdth
            for (i in 1:(nunits-1)) {
              for (j in (i+1):nunits) {
-               wcctab[i,j] <- wcc(object$codes[,i],
-                                  object$codes[,j],
+               wcctab[i,j] <- wcc(object$codes[i,],
+                                  object$codes[j,],
                                   object$trwdth,
                                   wghts = wghts,
                                   acors = object$acors[c(i,j)])
@@ -137,7 +137,7 @@ summary.WCCSOM <- function(object,
            if (!is.null(object$data.acors)) {
              data.acors <- object$data.acors
            } else {
-             data.acors <- wacmat(t(data), object$trwdth, wghts)
+             data.acors <- wacmat(data, object$trwdth, wghts)
            }
            
            for (i in 1:(nobj-1))

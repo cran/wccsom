@@ -21,7 +21,7 @@
 \examples{
 data(degelder)
 set.seed(1)
-geldermap <- WCCSOM(degelder$patterns, somgrid(6, 6, "hexagonal"))
+geldermap <- wccsom(degelder$patterns, somgrid(6, 6, "hexagonal"))
 options(digits = 3)
 summary(geldermap, "unit", nr=1, properties = degelder$properties)
 }

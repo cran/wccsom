@@ -12,18 +12,22 @@
 \usage{
 wcc(pattern1, pattern2, trwdth, wghts, acors)
 wac(pattern1, trwdth, wghts)
-wacmat(tpatterns, trwdth, wghts)
+wacmat(patterns, trwdth, wghts, do.transpose = TRUE)
 }
 \arguments{
   \item{pattern1}{Pattern.}
   \item{pattern2}{Another pattern.}
-  \item{tpatterns}{Transposed pattern matrix: columns correspond with
+  \item{patterns}{Pattern matrix: rows correspond with
     patterns.}
   \item{trwdth}{Triangle width, given in the number of data points.}
   \item{wghts}{Optional weights vector, will be calculated from triangle
   width if necessary. Sometimes it is more efficient to pre-calculate it
   and give it as an argument.}
   \item{acors}{Autocorrelation, also optional to speed up calculations.}
+  \item{do.transpose}{Internally, columns should correspond with
+    patterns, so normally one should leave this value to its default:
+    TRUE. If a matrix is already in the correct format, one can avoid
+    unnecessary double transpose operations.}
 }
 \value{
   Function \code{wcc} returns the WCC value, a similarity value between
@@ -37,7 +41,7 @@ wacmat(tpatterns, trwdth, wghts)
   J. Comput. Chem., 22(3), 273-289, 2001.}
 \author{Ron Wehrens}
 
-\seealso{\code{\link{WCCSOM}}}
+\seealso{\code{\link{wccsom}}, \code{\link{wccxyf}}}
 \examples{
 data(cepha)
 wac(cepha$patterns[1,], 20)

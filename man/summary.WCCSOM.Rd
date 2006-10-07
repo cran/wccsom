@@ -1,11 +1,11 @@
-\name{summary.WCCSOM}
-\alias{summary.WCCSOM}
-\title{Summarizing WCCSOM objects}
+\name{summary.wccsom}
+\alias{summary.wccsom}
+\title{Summarizing wccsom objects}
 \description{
-Summary for objects of class '"WCCSOM"'
+Summary for objects of class '"wccsom"'
 }
 \usage{
-summary.WCCSOM(object, type = c("unit", "object", "smoothness", "quality"),
+summary.wccsom(object, type = c("unit", "object", "smoothness", "quality"),
                nr, labels, data = object$data,
                classif = object$unit.classif,
                wccs = object$wccs, properties = NULL, \dots)
@@ -46,12 +46,12 @@ summary.WCCSOM(object, type = c("unit", "object", "smoothness", "quality"),
   mapped to different units.
 }
 \author{Ron Wehrens}
-\seealso{\code{\link{WCCSOM}}}
+\seealso{\code{\link{wccsom}}}
 \examples{
 data(cepha)
 gr <- somgrid(3,3, "hexagonal")
 set.seed(7)
-x <- WCCSOM(cepha$patterns, grid=gr, trwidth=20, rlen=100)
+x <- wccsom(cepha$patterns, grid=gr, trwidth=20, rlen=100)
 
 summary(x, "unit", nr=1, labels=paste(cepha$class.names, 1:20, sep=""))
 summary(x, "object", nr=1, labels=paste(cepha$class.names, 1:20, sep=""))

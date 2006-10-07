@@ -18,15 +18,20 @@ double wcc_crosscorr(double *, double *, int, double *, int);
 double wcc_autocorr(double *, int, double *, int);
 double wcc_corr(double *, double *, int);
 
-void WCC_onlineSOM(double *data, double *codes, double *nhbrdist,
-		   double *alphas, double *pradius, double *wghts,
-		   double *dataAcors, double *Acors, double *changes,
-		   Sint *pn, Sint *pp, Sint *pncodes, Sint *prlen,
-		   Sint *ptrwdth)
+
+void WCC_onlineSOM(double *data, 
+		   double *codes, 
+		   double *nhbrdist,
+		   double *alphas, double *pradius, 
+		   int *ptrwdth, double *wghts,
+		   double *dataAcors, double *Acors, 
+		   double *changes,
+		   int *pn, int *pp, 
+		   int *pncodes, int *prlen)
 {
   int n = *pn, p = *pp, ncodes = *pncodes, trwdth= *ptrwdth, rlen = *prlen; 
   int cd, i, j, k, l, nearest, fivers, twenties, iter;
-  double dm, wccval, tmp, alpha, radius, decay;
+  double dm, dist, tmp, alpha, radius, decay;
 
   /* radius: fast exponential decay ending at zero; lateron we add
      1 so that at least one group of neighbours will be
@@ -37,10 +42,10 @@ void WCC_onlineSOM(double *data, double *codes, double *nhbrdist,
     decay = 0.1;
 
   /* First calculate all autocors */
-  for (cd = 0; cd < ncodes; cd++)
-    Acors[cd] = wcc_autocorr(codes + cd*p, p, wghts, trwdth);
   for (i = 0; i < n; i++)
     dataAcors[i] = wcc_autocorr(data + i*p, p, wghts, trwdth);
+  for (cd = 0; cd < ncodes; cd++)
+    Acors[cd] = wcc_autocorr(codes + cd*p, p, wghts, trwdth);
 
   RANDIN;
 
@@ -49,7 +54,6 @@ void WCC_onlineSOM(double *data, double *codes, double *nhbrdist,
 
   iter = 0;
   for (k = 0; k < rlen; k++) {
-
     alpha = alphas[1] + ((alphas[0] - alphas[1]) * (rlen - k) / rlen);
     radius = 1.0 + (*pradius-1.0) * exp(-decay * k / rlen);
 
@@ -69,38 +73,41 @@ void WCC_onlineSOM(double *data, double *codes, double *nhbrdist,
       nearest = 0;
       dm = -1.0;
       for (cd=0; cd<ncodes; cd++) {
-	wccval = wcc_crosscorr(data + i*p, 
-			       codes + cd*p, 
-			       p, wghts, trwdth)/(Acors[cd] * dataAcors[i]);
-	if (wccval > dm) {
+	dist = wcc_crosscorr(data + i*p, 
+			     codes + cd*p, 
+			     p, wghts, trwdth)/(Acors[cd] * dataAcors[i]);
+	if (dist > dm) {
 	  nearest = cd;
-	  dm = wccval;
+	  dm = dist;
 	}
       }
       
       /* update all codes within certain radius of 'nearest' */
       for (cd = 0; cd < ncodes; cd++) {
 	if (nhbrdist[cd + ncodes*nearest] > radius) continue;
+	tmp = alpha / (1.0 + nhbrdist[cd + ncodes*nearest]);
+
 	for (j = 0; j < p; j++) {
-	  tmp = alpha / (1.0 + nhbrdist[cd + ncodes*nearest]);
-	  codes[cd*p + j] += tmp * (data[i*p + j] - codes[cd*p + j]);
+	  dist = data[i*p + j] - codes[cd*p + j];
+	  codes[cd*p + j] += tmp * dist;
+	  
+	  if (cd == nearest) changes[k] += dist * dist;
 	}
 	
 	Acors[cd] = wcc_autocorr(codes + cd*p, p, wghts, trwdth);
-
-	if (cd == nearest) {
-	  tmp = wcc_crosscorr(data + i*p,
-			      codes + cd*p,
-			      p, wghts, trwdth)/(Acors[cd] * dataAcors[i]);
-	  changes[k] += tmp - dm;
-	}
-
+	
+	/*	if (cd == nearest) {
+		tmp = wcc_crosscorr(data + i*p,
+		codes + cd*p,
+		p, wghts, trwdth)/(Acors[cd] * dataAcors[i]);
+		changes[k] += tmp - dm; } */
       }
     }
   }
   
   for (k = 0; k < rlen; k++)
-    changes[k] /= n;
+    changes[k] = sqrt(changes[k] / p)/n;
+  /*    changes[k] /= n; */
 
   fprintf(stdout, "\n");
   fflush(stdout);
@@ -108,12 +115,288 @@ void WCC_onlineSOM(double *data, double *codes, double *nhbrdist,
 }
 
 
+void WCCXYF_Tani(double *data, double *Ys, 
+		 double *codes, double *codeYs,
+		 double *nhbrdist,
+		 double *alphas, double *pradius,	
+		 double *xweight,
+		 int *ptrwdth, double *wghts,
+		 double *dataAcors, double *Acors,
+		 double *changes,
+		 double *xdists, double *ydists, /* working arrays */
+		 int *pn, int *ppx, int *ppy, 
+		 int *pncodes, int *prlen)
+{
+  int n = *pn, py = *ppy, px = *ppx, ncodes = *pncodes, rlen = *prlen,
+    trwdth = *ptrwdth;
+  int cd, i, j, k, l, nearest, fivers, twenties, iter;
+  double dist, tmp, alpha, decay, radius, maxx, maxy;
+
+  /* Check Ys and codeYs 
+     for (cd = 0; cd < ncodes; cd++) {
+     fprintf(stderr, "\n%d: ", cd);
+     for (j = 0; j < py; j++) 
+     fprintf(stderr, " %.3lf ", codeYs[cd*py + j]);
+     }
+     return; */
+
+  /* radius: exponential decay, after one-third of the iterations
+     smaller than one */
+  if (*pradius > 1.0)
+    decay = 3.0 * log(*pradius);
+  else
+    decay = 1.0;
+
+  /* First calculate all autocors */
+  for (i = 0; i < n; i++)
+    dataAcors[i] = wcc_autocorr(data + i*px, px, wghts, trwdth);
+  for (cd = 0; cd < ncodes; cd++)
+    Acors[cd] = wcc_autocorr(codes + cd*px, px, wghts, trwdth);
+
+  RANDIN;
+
+  fivers = rlen*n / 20;
+  twenties = rlen*n / 5;
+  iter = 0;
+
+  for (k = 0; k < rlen; k++) {
+    /* linear decrease in alpha, exponential in radius */
+    alpha = alphas[1] + ((alphas[0] - alphas[1]) * (rlen - k) / rlen);
+    radius = *pradius * exp(-decay * k / rlen);
+
+    changes[k] = 0.0;
+
+    for (l = 0; l < n; l++) {
+      if (iter++ % twenties == 0)
+	fprintf(stdout, "%d%%", 20 * iter / twenties);
+      else if (iter % fivers == 0)
+	fprintf(stdout, ".");
+      fflush(stdout);
+
+      /* i is a counter over objects in data, cd is a counter over units
+	 in the map, and j is a counter over variables */
+      i = (int)(n * UNIF);
+      
+      /* calculate distances in x and y spaces. Both are scaled
+	 between 0 and 1. The x-distance is a correlation measure
+	 which is converted to a distance by taking 1-r. */
+      maxx = maxy = 0;
+      for (cd = 0; cd < ncodes; cd++) {
+	xdists[cd] = 
+	  1.0 - wcc_crosscorr(data + i*px, 
+			      codes + cd*px, 
+			      px, wghts, trwdth)/(Acors[cd] * dataAcors[i]);
+	if (xdists[cd] > maxx) maxx = xdists[cd];
+	
+	/* Tanimoto distance */
+	tmp = 0;
+	for (j = 1; j < py; j++) {
+	  if ((Ys[i*py + j] > .5 && 
+	       codeYs[cd*py + j] <= .5) ||
+	      (Ys[i*py + j] <= .5 && 
+	       codeYs[cd*py + j] > .5))
+	    tmp += 1.0;
+	}
+	ydists[cd] = tmp/(double)py;
+	if (ydists[cd] > maxy) maxy = ydists[cd];
+	/*	fprintf(stderr, "\nTanimoto distance: %.4lf",
+		ydists[cd]); */
+      }
+
+      /* the following should never occur for x but may occur in freak
+	 classification situations where all units end up in the same
+	 class. */
+      if (maxx < 1e-5) maxx = 1.0;
+      if (maxy < 1e-5) maxy = 1.0;
+      
+      /* Find smallest distance. */
+      dist = DOUBLE_XMAX;
+      for (cd = 0; cd < ncodes; cd++) {
+	xdists[cd] /= maxx;
+	ydists[cd] /= maxy;
+	tmp = *xweight * xdists[cd] + (1.0 - *xweight) * ydists[cd];
+	if (tmp < dist) {
+	  dist = tmp;
+	  nearest = cd;
+	}
+      }
+      
+      /* update all codes within certain radius of 'nearest' */
+      for (cd = 0; cd < ncodes; cd++) {
+	if(nhbrdist[cd + ncodes*nearest] > radius) continue;
+	
+	tmp = alpha / (1.0 + nhbrdist[cd + ncodes*nearest]);
+	for(j = 0; j < px; j++) {
+	  dist = data[i*px + j] - codes[cd*px + j];
+	  codes[cd*px + j] += tmp * dist;
+	  
+	  if (cd == nearest) changes[k] += dist * dist;
+	}
+	
+	/*	fprintf(stderr, "\n%d: Y\tcodeY", cd); */
+	for(j = 0; j < py; j++) {
+	  /*	  fprintf(stderr, "\n%.3lf\t%.3lf", Ys[i*py + j],
+		  codeYs[cd*py + j]); */
+	  dist = Ys[i*py + j] - codeYs[cd*py + j];
+	  codeYs[cd*py + j] += tmp * dist;
+	  
+	  if (cd == nearest) changes[k+rlen] += dist * dist;
+	}
+
+	Acors[cd] = wcc_autocorr(codes + cd*px, px, wghts, trwdth);
+      }
+    }
+  }
+  
+  for (k = 0; k < rlen; k++) {
+    changes[k] = sqrt(changes[k]/px)/n;
+    changes[k + rlen] = sqrt(changes[k + rlen]/py)/n;
+  }
+
+  fprintf(stdout, "\n");
+  fflush(stdout);
+  RANDOUT;
+}
+
+
+void WCCXYF_Eucl(double *data, double *Ys, 
+		 double *codes, double *codeYs,
+		 double *nhbrdist,
+		 double *alphas, double *pradius,	
+		 double *xweight,
+		 int *ptrwdth, double *wghts,
+		 double *dataAcors, double *Acors,
+		 double *changes,
+		 double *xdists, double *ydists, /* working arrays */
+		 int *pn, int *ppx, int *ppy, 
+		 int *pncodes, int *prlen)
+{
+  int n = *pn, py = *ppy, px = *ppx, ncodes = *pncodes, rlen = *prlen,
+    trwdth = *ptrwdth;
+  int cd, i, j, k, l, nearest, fivers, twenties, iter;
+  double dist, tmp, alpha, decay, radius, maxx, maxy;
+  
+  /* radius: exponential decay, after one-third of the iterations
+     smaller than one */
+  if (*pradius > 1.0)
+    decay = 3.0 * log(*pradius);
+  else
+    decay = 1.0;
+  
+  /* First calculate all autocors */
+  for (i = 0; i < n; i++)
+    dataAcors[i] = wcc_autocorr(data + i*px, px, wghts, trwdth);
+  for (cd = 0; cd < ncodes; cd++)
+    Acors[cd] = wcc_autocorr(codes + cd*px, px, wghts, trwdth);
+  
+  RANDIN;
+  
+  fivers = rlen*n / 20;
+  twenties = rlen*n / 5;
+  iter = 0;
+  
+  for (k = 0; k < rlen; k++) {
+    /* linear decrease in alpha, exponential in radius */
+    alpha = alphas[1] + ((alphas[0] - alphas[1]) * (rlen - k) / rlen);
+    radius = *pradius * exp(-decay * k / rlen);
+    
+    changes[k] = 0.0;
+    
+    for (l = 0; l < n; l++) {
+      if (iter++ % twenties == 0)
+	fprintf(stdout, "%d%%", 20 * iter / twenties);
+      else if (iter % fivers == 0)
+	fprintf(stdout, ".");
+      fflush(stdout);
+      
+      /* i is a counter over objects in data, cd is a counter over units
+	 in the map, and j is a counter over variables */
+      i = (int)(n * UNIF);
+      
+      /* calculate distances in x and y spaces. Both are scaled
+	 between 0 and 1. The x-distance is a correlation measure
+	 which is converted to a distance by taking 1-r. */
+      maxx = maxy = -1.0;
+      for (cd = 0; cd < ncodes; cd++) {
+	xdists[cd] = 
+	  1.0 - wcc_crosscorr(data + i*px, 
+			      codes + cd*px, 
+			      px, wghts, trwdth)/(Acors[cd] * dataAcors[i]);
+	if (xdists[cd] > maxx) maxx = xdists[cd];
+	
+	/* Euclidean distance */
+	ydists[cd] = 0.0;
+	for (j = 0; j < py; j++) {
+	  tmp = Ys[i*py + j] - codeYs[cd*py + j];
+	  ydists[cd] += tmp * tmp;
+	}
+	ydists[cd] = sqrt(ydists[cd]);
+	if (ydists[cd] > maxy) maxy = ydists[cd];
+      }
+      
+      /* the following should never occur for x but may occur in freak
+	 classification situations where all units end up in the same
+	 class. */
+      if (maxx < 1e-5) maxx = 1.0;
+      if (maxy < 1e-5) maxy = 1.0;
+      
+      /* scaling of y distances in this case is necessary; we divide
+	 by the largest distance. Then, add, with factor xweight, and
+	 find smallest overall distance. */
+      dist = DOUBLE_XMAX;
+      for (cd = 0; cd < ncodes; cd++) {
+	xdists[cd] /= maxx;
+	ydists[cd] /= maxy;
+	tmp = *xweight * xdists[cd] + ((1.0 - *xweight) * ydists[cd]);
+	if (tmp < dist) {
+	  dist = tmp;
+	  nearest = cd;
+	}
+      }
+      
+      /* update all codes within certain radius of 'nearest' */
+      for (cd = 0; cd < ncodes; cd++) {
+	if(nhbrdist[cd + ncodes*nearest] > radius) continue;
+	
+	tmp = alpha / (1.0 + nhbrdist[cd + ncodes*nearest]);
+	for(j = 0; j < px; j++) {
+	  dist = data[i*px + j] - codes[cd*px + j];
+	  codes[cd*px + j] += tmp * dist;
+	  
+	  if (cd == nearest) changes[k] += dist * dist;
+	}
+	
+	for(j = 0; j < py; j++) {
+	  dist = Ys[i*py + j] - codeYs[cd*py + j];
+	  codeYs[cd*py + j] += tmp * dist;
+	  
+	  if (cd == nearest) changes[k+rlen] += dist * dist;
+	}
+
+	Acors[cd] = wcc_autocorr(codes + cd*px, px, wghts, trwdth);
+      }
+    }
+  }
+  
+  for (k = 0; k < rlen; k++) {
+    changes[k] = sqrt(changes[k]/px)/n;
+    changes[k + rlen] = sqrt(changes[k + rlen]/py)/n;
+  }
+  
+  fprintf(stdout, "\n");
+  fflush(stdout);
+  RANDOUT;
+}
+
+
+
 /* knn1 procedure using the wcc value as a distance */
 
 void wccassign(double *data, double *dataAcors, 
 	       double *codes, double *Acors, 
-	       double *wghts, int *classif, double *bestwccs,
-	       Sint *pn, Sint *pp, Sint *pncodes, Sint *ptrwdth)
+	       int *ptrwdth, double *wghts, 
+	       int *classif, double *bestwccs,
+	       int *pn, int *pp, int *pncodes)
 {
   int n = *pn, p = *pp, ncodes = *pncodes, trwdth= *ptrwdth;
   int cd, i, nearest;
@@ -178,16 +461,16 @@ double wcc_corr(double *p1, double *p2, int npoints)
   return(anum);
 }
 
-void wccdist(double *p1, double *p2, Sint *pnpoints, 
-	     double *wghts, Sint *ptrwdth, double *WCC)
+void wccdist(double *p1, double *p2, int *pnpoints, 
+	     double *wghts, int *ptrwdth, double *WCC)
 {
   int npoints = *pnpoints, trwdth=*ptrwdth;
 
   *WCC = wcc_crosscorr(p1, p2, npoints, wghts, trwdth);
 }
 
-void wacdist(double *p1, Sint *pnpoints, 
-	     double *wghts, Sint *ptrwdth, double *ACC) 
+void wacdist(double *p1, int *pnpoints, 
+	     double *wghts, int *ptrwdth, double *ACC) 
 {
   int npoints = *pnpoints, trwdth=*ptrwdth;
 
@@ -195,8 +478,8 @@ void wacdist(double *p1, Sint *pnpoints,
 }
 
 
-void wacdists(double *patterns, Sint *pnobj, Sint *pnpoints, 
-	      double *wghts, Sint *ptrwdth, double *ACC) 
+void wacdists(double *patterns, int *pnobj, int *pnpoints, 
+	      double *wghts, int *ptrwdth, double *ACC) 
 {
   int nobj = *pnobj, npoints = *pnpoints, trwdth=*ptrwdth;
   int i;
@@ -204,5 +487,4 @@ void wacdists(double *patterns, Sint *pnobj, Sint *pnpoints,
   for (i=0; i<nobj; i++)
     ACC[i] = wcc_autocorr(patterns + i*npoints, npoints, wghts, trwdth);
 }
-
 

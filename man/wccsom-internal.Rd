@@ -1,8 +1,7 @@
 \name{wccsom-internal}
-\title{Internal WCCSOM functions}
+\title{Internal wccsom functions}
 \alias{plot.somgrid}
 \alias{wcc.kmeans}
-\alias{unit.distances}
 \description{
   Internal tools functions.
 }

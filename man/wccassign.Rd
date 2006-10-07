@@ -19,12 +19,12 @@ wccassign(x, data)
     which they are assigned.}
 }
 \author{Ron Wehrens}
-\seealso{\code{\link{WCCSOM}}}}
+\seealso{\code{\link{wccsom}}}}
 \examples{
 data(cepha)
 gr <- somgrid(3,3, "hexagonal")
 set.seed(7)
-x <- WCCSOM(cepha$patterns, grid=gr, trwidth=20, rlen=50,
+x <- wccsom(cepha$patterns, grid=gr, trwidth=20, rlen=50,
             FineTune=FALSE, keep.data=FALSE)
 sombins <- wccassign(x, cepha$patterns)
 }

@@ -1,9 +1,9 @@
-WCCSOM <- function(data, grid=somgrid(), rlen = 100,
-                   alpha = c(0.05, 0.01),
-                   radius = quantile(nhbrdist, 0.7),
-                   init, nhbrdist, trwidth = 20, 
-                   toroidal = FALSE, FineTune = TRUE,
-                   keep.data = TRUE) 
+"wccsom" <- function(data, grid=somgrid(), rlen = 100,
+                     alpha = c(0.05, 0.01),
+                     radius = quantile(nhbrdist, 0.7),
+                     init, nhbrdist, trwidth = 20, 
+                     toroidal = FALSE, FineTune = TRUE,
+                     keep.data = TRUE) 
 {
   data <- as.matrix(data)
   datadims <- dimnames(data)
@@ -17,16 +17,12 @@ WCCSOM <- function(data, grid=somgrid(), rlen = 100,
   else
     wghts <- 1
 
-  ## Default initialisation: random selections or linear combinations
+  ## Default initialisation: random linear combinations
   ## of data points   
   if(missing(init)) {
-    if (nobj > nunits) {
-      init <- data[sample(nobj, nunits, replace = FALSE), ]
-    } else {
-      initwghts <- matrix(runif(nunits*nobj), nunits, nobj)
-      initwghts <- sweep(initwghts, 1, rowSums(initwghts), FUN="/")
-      init <- initwghts %*% data
-    }
+    initwghts <- matrix(runif(nunits*nobj), nunits, nobj)
+    initwghts <- sweep(initwghts, 1, rowSums(initwghts), FUN="/")
+    init <- initwghts %*% data
   }
   
   ## In the C-code, it is easier to have data
@@ -56,6 +52,7 @@ WCCSOM <- function(data, grid=somgrid(), rlen = 100,
             nhbrdist = as.double(nhbrdist),
             alpha = as.double(alpha),
             radius = as.double(radius),
+            trwdth = as.integer(trwidth),
             wghts = as.double(wghts),
             data.acors = as.double(data.acors),
             acors = as.double(acors),
@@ -64,12 +61,10 @@ WCCSOM <- function(data, grid=somgrid(), rlen = 100,
             nvar = as.integer(nvar),
             ncodes = as.integer(nunits),
             rlen = as.integer(rlen),
-            trwdth = as.integer(trwidth),
             PACKAGE = "wccsom")
 
   changes <- res$changes
-  codes <- res$codes
-  dim(codes) <- dim(init)
+  codes <- matrix(res$codes, nvar, nunits)
   acors <- res$acors
   data.acors <- res$data.acors
   
@@ -89,13 +84,13 @@ WCCSOM <- function(data, grid=somgrid(), rlen = 100,
                  data.acors = as.double(data.acors),
                  codes = as.double(codes),
                  acors = as.double(acors),
+                 trwdth = as.integer(trwidth),
                  wghts = as.double(wghts),
                  classif = as.integer(classif),
                  wccs = as.double(wccs),
                  as.integer(nobj),
                  as.integer(nvar),
                  as.integer(nunits),
-                 as.integer(trwidth),
                  PACKAGE = "wccsom")
       unit.classif <- res$classif
       wccs <- res$wccs
@@ -104,16 +99,16 @@ WCCSOM <- function(data, grid=somgrid(), rlen = 100,
 
   if (keep.data) {
     structure(list(data = t(data), grid = grid, changes = changes,
-                   codes = codes, trwdth = trwidth,
+                   codes = t(codes), trwdth = trwidth,
                    unit.classif = unit.classif, wccs = wccs,
                    data.acors = data.acors, acors = acors,
                    toroidal = toroidal, FineTune = FineTune),
-              class = c("WCCSOM","SOM"))
+              class = c("wccsom","SOM"))
   } else {
-    structure(list(grid = grid, changes = changes, codes = codes,
+    structure(list(grid = grid, changes = changes, codes = t(codes),
                    trwdth = trwidth, acors = acors, toroidal = toroidal,
                    FineTune = FineTune), 
-              class = c("WCCSOM","SOM"))
+              class = c("wccsom","SOM"))
   }
 }
 
@@ -161,20 +156,20 @@ wcc.kmeans <- function(data, data.acors, codes, acors, tw, maxit=20) {
 
   wccs <- oldclassif <- newclassif <- rep(0, nobj)
   if (missing(data.acors))
-    data.acors <- wacmat(data, tw, wghts)
+    data.acors <- wacmat(data, tw, wghts, do.transpose=FALSE)
 
   res <- .C("wccassign",
             data = as.double(data),
             data.acors = as.double(data.acors),
             codes = as.double(codes),
             acors = as.double(acors),
+            as.integer(tw),
             wghts = as.double(wghts),
             oldclassif = as.integer(oldclassif),
             wccs = as.double(wccs),
             as.integer(nobj),
             as.integer(nvar),
             as.integer(nunits),
-            as.integer(tw),
             PACKAGE = "wccsom")
 
   oldclassif <- res$oldclassif
@@ -188,20 +183,20 @@ wcc.kmeans <- function(data, data.acors, codes, acors, tw, maxit=20) {
         codes[,j] <- apply(data[,whichones, drop=FALSE], 1, mean)
       }
     }
-    acors <- wacmat(codes, tw, wghts)
+    acors <- wacmat(codes, tw, wghts, do.transpose=FALSE)
 
     res <- .C("wccassign",
               data = as.double(data),
               data.acors = as.double(data.acors),
               codes = as.double(codes),
               acors = as.double(acors),
+              as.integer(tw),
               wghts = as.double(wghts),
               newclassif = as.integer(newclassif),
               wccs = as.double(wccs),
               as.integer(nobj),
               as.integer(nvar),
               as.integer(nunits),
-              as.integer(tw),
               PACKAGE = "wccsom")
     newclassif <- res$newclassif
 
@@ -221,45 +216,6 @@ wcc.kmeans <- function(data, data.acors, codes, acors, tw, maxit=20) {
        classif = newclassif, wccs = res$wccs, i = i)
 }
 
-
-## Assign new data using wcc with unit weight vector
-
-wccassign <- function(x, data)
-{
-  nobj <- nrow(data)
-  nvar <- ncol(data)
-  nunits <- nrow(x$grid$pts)
-  tw <- x$trwdth
-  classif <- rep(0, nobj)
-  wccs <- rep(0, nobj)
-
-  if (tw > 0)
-    wghts <- 1 - (0:tw)/tw
-  else
-    wghts <- 1
-  
-  codes <- x$codes
-  acors <- x$acors
-
-  data <- t(data)
-  data.acors <- wacmat(data, tw, wghts)
-  
-  res <- .C("wccassign",
-            data = as.double(data),
-            data.acors = as.double(data.acors),
-            codes = as.double(codes),
-            acors = as.double(acors),
-            wghts = as.double(wghts),
-            classif = as.integer(classif),
-            wccs = as.double(wccs),
-            as.integer(nobj),
-            as.integer(nvar),
-            as.integer(nunits),
-            as.integer(tw),
-            PACKAGE = "wccsom")
-
-  list(classif = res$classif, wccs = res$wccs)
-}
 
 
 ## Weighted Autocorrelation and Crosscorrelation functions
@@ -284,13 +240,13 @@ wac <- function(pattern1, trwdth, wghts)
 }
 
 
-## wacmat takes a transposed data matrix, so the patterns are in the
-## columns!
-
-wacmat <- function(tpatterns, trwdth, wghts)
+wacmat <- function(patterns, trwdth, wghts, do.transpose=TRUE)
 {
-  nobj <- dim(tpatterns)[2]
-  np <- dim(tpatterns)[1]
+  if (do.transpose)
+    patterns <- t(patterns)
+  
+  nobj <- dim(patterns)[2]
+  np <- dim(patterns)[1]
   
   if (missing(wghts)) {
     if (trwdth > 0)
@@ -301,7 +257,7 @@ wacmat <- function(tpatterns, trwdth, wghts)
 
   wacval <- rep(0, nobj)
   .C("wacdists",
-     as.double(tpatterns),
+     as.double(patterns),
      as.integer(nobj),
      as.integer(np),
      as.double(wghts),

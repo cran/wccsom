@@ -26,11 +26,11 @@ debucket(x, nout)
 data(cepha)
 gr <- somgrid(3,3, "hexagonal")
 set.seed(7)
-system.time(x <- WCCSOM(cepha$patterns, grid=gr, trwidth=20,
+system.time(x <- wccsom(cepha$patterns, grid=gr, trwidth=20,
                         rlen=500, FineTune=FALSE))
 
 X <- bucket(cepha$patterns, 4)
-system.time(x <- WCCSOM(X, grid=gr, trwidth=5,
+system.time(x <- wccsom(X, grid=gr, trwidth=5,
                         rlen=500, FineTune=FALSE))
 }
 \keyword{classif}
