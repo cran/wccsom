@@ -37,14 +37,14 @@
   acors  <- rep(0, nunits)
   data.acors <- rep(0, nobj)
   
+  if (missing(nhbrdist))
+    nhbrdist <- unit.distances(grid, toroidal)
+
   if (toroidal) {
     if (grid$topo == "hexagonal" & (grid$ydim %% 2 == 1))
       stop("Error: uneven number of rows (y) in hexagonal toroidal grid")
     radius <- radius*0.5
   }
-
-  if (missing(nhbrdist))
-    nhbrdist <- unit.distances(grid, toroidal)
 
   res <- .C("WCC_onlineSOM",
             data = as.double(data),

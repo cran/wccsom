@@ -143,7 +143,7 @@ plot.wccmapping <- function(x, classif, main, labels, pchs,
   if (is.null(classif) & !is.null(x$unit.classif)) {
     classif <- x$unit.classif
   } else {
-    if (!is.null(classif$classif))
+    if (is.list(classif) && !is.null(classif$classif))
       classif <- classif$classif
   }
   if (is.null(classif))
@@ -280,7 +280,7 @@ plot.wccmapping <- function(x, classif, main, labels, pchs,
   if (is.null(classif) & !is.null(x$unit.classif)) {
     classif <- x$unit.classif
   } else {
-    if (!is.null(classif$classif))
+    if (is.list(classif) && !is.null(classif$classif))
       classif <- classif$classif
   }
   if (is.null(classif))
@@ -366,7 +366,9 @@ plot.wccmapping <- function(x, classif, main, labels, pchs,
     classif <- x$unit.classif
     wccs <- x$wccs
   } else {
-    if (!is.null(classif$classif) & !is.null(classif$wccs)) {
+    if (is.list(classif) &&
+        !is.null(classif$classif) &&
+        !is.null(classif$wccs)) {
       classif <- classif$classif
       wccs <- classif$wccs
     }

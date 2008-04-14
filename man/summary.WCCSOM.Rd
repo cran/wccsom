@@ -5,7 +5,7 @@
 Summary for objects of class '"wccsom"'
 }
 \usage{
-summary.wccsom(object, type = c("unit", "object", "smoothness", "quality"),
+\method{summary}{wccsom}(object, type = c("unit", "object", "smoothness", "quality"),
                nr, labels, data = object$data,
                classif = object$unit.classif,
                wccs = object$wccs, properties = NULL, \dots)

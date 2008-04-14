@@ -7,7 +7,7 @@
   individual objects.
 }
 \usage{
-predict.wccsom(object, newdata,
+\method{predict}{wccsom}(object, newdata,
                trainX, trainY, unit.predictions, \dots)
 }
 \arguments{

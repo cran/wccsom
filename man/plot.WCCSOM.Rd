@@ -14,7 +14,7 @@
   of plots are supported.
 }
 \usage{
-plot.wccsom(x, type = c("changes", "codes", "counts", "mapping",
+\method{plot}{wccsom}(x, type = c("changes", "codes", "counts", "mapping",
                         "prediction", "property", "quality"),
             classif = NULL, labels = NULL, pchs = NULL, main = NULL,
             palette.name = heat.colors, ncolors, unit.colors,

@@ -12,8 +12,12 @@ summary.wccsom <- function(object,
   codes <- object$codes
 
   if (type != "smoothness") { # incase output of wccassign is given
-    if (!is.null(classif$classif)) classif <- classif$classif
-    if (!is.null(classif$wccs)) wccs <- classif$wccs
+    if (is.list(classif) &&
+        !is.null(classif$classif) &&
+        !is.null(classif$wccs)) {
+      classif <- classif$classif
+      wccs <- classif$wccs
+    }
   }
   
   switch(type,
