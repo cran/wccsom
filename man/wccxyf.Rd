@@ -61,7 +61,7 @@ wccxyf(data, Y, grid=somgrid(), rlen = 100, alpha = c(0.05, 0.01),
 \references{FIXME: this page is a copy of wccsom, should be edited further}
 \author{Ron Wehrens}
 
-\seealso{\code{\link{SOM}}, \code{\link{plot.wccsom}},
+\seealso{\code{\link[class]{SOM}}, \code{\link{plot.wccsom}},
   \code{\link{wccsom}}, \code{\link{wcc}}}
 \examples{
 data(degelder)

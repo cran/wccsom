@@ -13,19 +13,19 @@ wccassign(x, data)
   \item{data}{Data matrix}
 }
 \value{
-  Returns a list with components
+  Returns a list with components:
   \item{classif}{Unit numbers to which rows in the data matrix are assigned}
-  \item{wccs }{wcc value of rows in the data matrix and the units to
+  \item{wccs}{wcc value of rows in the data matrix and the units to
     which they are assigned.}
 }
 \author{Ron Wehrens}
-\seealso{\code{\link{wccsom}}}}
+\seealso{\code{\link{wccsom}}}
 \examples{
 data(cepha)
 gr <- somgrid(3,3, "hexagonal")
 set.seed(7)
-x <- wccsom(cepha$patterns, grid=gr, trwidth=20, rlen=50,
-            FineTune=FALSE, keep.data=FALSE)
+x <- wccsom(cepha$patterns, grid = gr, trwidth = 20, rlen = 50,
+            FineTune = FALSE, keep.data = FALSE)
 sombins <- wccassign(x, cepha$patterns)
 }
 \keyword{classif}

@@ -14,9 +14,8 @@
   component, "thetas", contains the 2theta values at which intensities
   have been measured.
 }
-\source{
-  
-}
+\references{R. de Gelder, R. Wehrens, and J.A. Hageman.
+J. Comput. Chem., 22(3), 273-289, 2001.}
 \examples{
 data(cepha)
 plot(cepha$thetas, cepha$patterns[1,], type="l", xlab="2theta", ylab="Counts")

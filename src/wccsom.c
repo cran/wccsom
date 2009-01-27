@@ -31,7 +31,7 @@ void WCC_onlineSOM(double *data,
 {
   int n = *pn, p = *pp, ncodes = *pncodes, trwdth= *ptrwdth, rlen = *prlen; 
   int cd, i, j, k, l, nearest, fivers, twenties, iter;
-  double dm, dist, tmp, alpha, radius, decay;
+  double dm, sim, dist, tmp, alpha, radius, decay;
 
   /* radius: fast exponential decay ending at zero; lateron we add
      1 so that at least one group of neighbours will be
@@ -70,18 +70,21 @@ void WCC_onlineSOM(double *data,
       i = (int)(n * UNIF);
       
       /* find the nearest code 'near' */
-      nearest = 0;
+      nearest = -1;
       dm = -1.0;
       for (cd=0; cd<ncodes; cd++) {
-	dist = wcc_crosscorr(data + i*p, 
+	sim = wcc_crosscorr(data + i*p, 
 			     codes + cd*p, 
 			     p, wghts, trwdth)/(Acors[cd] * dataAcors[i]);
-	if (dist > dm) {
+	if (sim > dm) {
 	  nearest = cd;
-	  dm = dist;
+	  dm = sim;
 	}
       }
-      
+
+      if (nearest < 0)
+	error("No nearest neighbour found...");
+
       /* update all codes within certain radius of 'nearest' */
       for (cd = 0; cd < ncodes; cd++) {
 	if (nhbrdist[cd + ncodes*nearest] > radius) continue;
@@ -210,7 +213,7 @@ void WCCXYF_Tani(double *data, double *Ys,
       if (maxy < 1e-5) maxy = 1.0;
       
       /* Find smallest distance. */
-      dist = DOUBLE_XMAX;
+      dist = DOUBLE_XMAX; nearest = -1;
       for (cd = 0; cd < ncodes; cd++) {
 	xdists[cd] /= maxx;
 	ydists[cd] /= maxy;
@@ -221,7 +224,10 @@ void WCCXYF_Tani(double *data, double *Ys,
 	}
       }
       
-      /* update all codes within certain radius of 'nearest' */
+      if (nearest < 0)
+	error("No nearest neighbour found...");
+
+     /* update all codes within certain radius of 'nearest' */
       for (cd = 0; cd < ncodes; cd++) {
 	if(nhbrdist[cd + ncodes*nearest] > radius) continue;
 	
@@ -343,7 +349,7 @@ void WCCXYF_Eucl(double *data, double *Ys,
       /* scaling of y distances in this case is necessary; we divide
 	 by the largest distance. Then, add, with factor xweight, and
 	 find smallest overall distance. */
-      dist = DOUBLE_XMAX;
+      dist = DOUBLE_XMAX; nearest = -1;
       for (cd = 0; cd < ncodes; cd++) {
 	xdists[cd] /= maxx;
 	ydists[cd] /= maxy;
@@ -354,6 +360,9 @@ void WCCXYF_Eucl(double *data, double *Ys,
 	}
       }
       
+      if (nearest < 0)
+	error("No nearest neighbour found...");
+
       /* update all codes within certain radius of 'nearest' */
       for (cd = 0; cd < ncodes; cd++) {
 	if(nhbrdist[cd + ncodes*nearest] > radius) continue;

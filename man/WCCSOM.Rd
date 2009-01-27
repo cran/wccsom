@@ -58,7 +58,7 @@ Representing Structural Databases in a Self-Organising Map.
 Acta Cryst. B61, 548-557, 2005.}
 \author{Ron Wehrens}
 
-\seealso{\code{\link{SOM}}, \code{\link{plot.wccsom}},
+\seealso{\code{\link[class]{SOM}}, \code{\link{plot.wccsom}},
   \code{\link{wccxyf}}, \code{\link{wcc}}}
 \examples{
 data(cepha)
