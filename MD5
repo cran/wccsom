@@ -1,4 +1,4 @@
-d4e7df6077b79df8550e05bf7a6a5516 *DESCRIPTION
+436529377dc4752fc9bc4eed7a39be80 *DESCRIPTION
 f5d339b08cf0f70ec9ee3de62510e52c *NAMESPACE
 d603280129f7f6869917b22e9c6cfb05 *R/classvec2classmat.R
 c76c807bcbde538019850dce1c4520e5 *R/expand.R
@@ -27,4 +27,4 @@ a633c9da4b624aeac6971b2c49927968 *man/wccmap.Rd
 ce84f2e139deb5814a6c53d2181ee207 *man/wccsom-internal.Rd
 4a06f7a198d120066feaa0a80cd994f1 *man/wccsom.Rd
 2c4c496734310b6dbfbc5b1b5c993e01 *man/wccxyf.Rd
-7cd5703bb49b3c0c09afe54cac9aae9c *src/wccsom.c
+b2fc7218224a6986d0c9ce4d647bc326 *src/wccsom.c

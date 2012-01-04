@@ -64,7 +64,7 @@ void WCC_onlineSOM(double *data,
 	Rprintf("%d%%", 20 * iter / twenties);
       else if (iter % fivers == 0)
 	Rprintf(".");
-      R_FlushConsole;
+      R_FlushConsole();
 
       /* pick a random data point */
       i = (int)(n * UNIF);
@@ -113,7 +113,7 @@ void WCC_onlineSOM(double *data,
   /*    changes[k] /= n; */
 
   Rprintf("\n");
-  R_FlushConsole;
+  R_FlushConsole();
   RANDOUT;
 }
 
@@ -166,7 +166,7 @@ void WCCXYF_Tani(double *data, double *Ys,
 	Rprintf("%d%%", 20 * iter / twenties);
       else if (iter % fivers == 0)
 	Rprintf(".");
-      R_FlushConsole;
+      R_FlushConsole();
 
       /* i is a counter over objects in data, cd is a counter over units
 	 in the map, and j is a counter over variables */
@@ -252,7 +252,7 @@ void WCCXYF_Tani(double *data, double *Ys,
   }
 
   Rprintf("\n");
-  R_FlushConsole;
+  R_FlushConsole();
   RANDOUT;
 }
 
@@ -305,7 +305,7 @@ void WCCXYF_Eucl(double *data, double *Ys,
 	Rprintf("%d%%", 20 * iter / twenties);
       else if (iter % fivers == 0)
 	Rprintf(".");
-      R_FlushConsole;
+      R_FlushConsole();
       
       /* i is a counter over objects in data, cd is a counter over units
 	 in the map, and j is a counter over variables */
@@ -385,7 +385,7 @@ void WCCXYF_Eucl(double *data, double *Ys,
   }
   
   Rprintf("\n");
-  R_FlushConsole;
+  R_FlushConsole();
   RANDOUT;
 }
 
