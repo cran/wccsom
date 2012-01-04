@@ -1,6 +1,6 @@
 /* wccsom.c: for mapping patters using the WCC criterion as a distance
    measure.
-   This version: Jan 19, 2006
+   This version: Jan 5, 2012
    Author: Ron Wehrens
 
    Adapted from:
@@ -61,10 +61,10 @@ void WCC_onlineSOM(double *data,
 
     for (l = 0; l < n; l++) {
       if (iter++ % twenties == 0)
-	fprintf(stdout, "%d%%", 20 * iter / twenties);
+	Rprintf("%d%%", 20 * iter / twenties);
       else if (iter % fivers == 0)
-	fprintf(stdout, ".");
-      fflush(stdout);
+	Rprintf(".");
+      R_FlushConsole;
 
       /* pick a random data point */
       i = (int)(n * UNIF);
@@ -112,8 +112,8 @@ void WCC_onlineSOM(double *data,
     changes[k] = sqrt(changes[k] / p)/n;
   /*    changes[k] /= n; */
 
-  fprintf(stdout, "\n");
-  fflush(stdout);
+  Rprintf("\n");
+  R_FlushConsole;
   RANDOUT;
 }
 
@@ -134,14 +134,6 @@ void WCCXYF_Tani(double *data, double *Ys,
     trwdth = *ptrwdth;
   int cd, i, j, k, l, nearest, fivers, twenties, iter;
   double dist, tmp, alpha, decay, radius, maxx, maxy;
-
-  /* Check Ys and codeYs 
-     for (cd = 0; cd < ncodes; cd++) {
-     fprintf(stderr, "\n%d: ", cd);
-     for (j = 0; j < py; j++) 
-     fprintf(stderr, " %.3lf ", codeYs[cd*py + j]);
-     }
-     return; */
 
   /* radius: exponential decay, after one-third of the iterations
      smaller than one */
@@ -171,10 +163,10 @@ void WCCXYF_Tani(double *data, double *Ys,
 
     for (l = 0; l < n; l++) {
       if (iter++ % twenties == 0)
-	fprintf(stdout, "%d%%", 20 * iter / twenties);
+	Rprintf("%d%%", 20 * iter / twenties);
       else if (iter % fivers == 0)
-	fprintf(stdout, ".");
-      fflush(stdout);
+	Rprintf(".");
+      R_FlushConsole;
 
       /* i is a counter over objects in data, cd is a counter over units
 	 in the map, and j is a counter over variables */
@@ -259,8 +251,8 @@ void WCCXYF_Tani(double *data, double *Ys,
     changes[k + rlen] = sqrt(changes[k + rlen]/py)/n;
   }
 
-  fprintf(stdout, "\n");
-  fflush(stdout);
+  Rprintf("\n");
+  R_FlushConsole;
   RANDOUT;
 }
 
@@ -310,10 +302,10 @@ void WCCXYF_Eucl(double *data, double *Ys,
     
     for (l = 0; l < n; l++) {
       if (iter++ % twenties == 0)
-	fprintf(stdout, "%d%%", 20 * iter / twenties);
+	Rprintf("%d%%", 20 * iter / twenties);
       else if (iter % fivers == 0)
-	fprintf(stdout, ".");
-      fflush(stdout);
+	Rprintf(".");
+      R_FlushConsole;
       
       /* i is a counter over objects in data, cd is a counter over units
 	 in the map, and j is a counter over variables */
@@ -392,8 +384,8 @@ void WCCXYF_Eucl(double *data, double *Ys,
     changes[k + rlen] = sqrt(changes[k + rlen]/py)/n;
   }
   
-  fprintf(stdout, "\n");
-  fflush(stdout);
+  Rprintf("\n");
+  R_FlushConsole;
   RANDOUT;
 }
 
