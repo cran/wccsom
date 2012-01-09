@@ -1,5 +1,5 @@
-436529377dc4752fc9bc4eed7a39be80 *DESCRIPTION
-f5d339b08cf0f70ec9ee3de62510e52c *NAMESPACE
+5ea367bef251f227ea3b52cdc90edb2a *DESCRIPTION
+195088b3853dc519eebe0aab18ebdc42 *NAMESPACE
 d603280129f7f6869917b22e9c6cfb05 *R/classvec2classmat.R
 c76c807bcbde538019850dce1c4520e5 *R/expand.R
 5dfcbab43809b5454138cbdf91b1d8ad *R/plot.R
@@ -9,7 +9,6 @@ f934233d7327cba1824eeb5dba594017 *R/wccassign.R
 d2f8bfadf8d1428539ed75b1e88d5016 *R/wccmap.R
 ab8e5f06100f63e71de92fe07a8bd80c *R/wccsom.R
 1786c8dabf954906aa0c68a1495ad72e *R/wccxyf.R
-17cf7315ed196cae4ac5738ec678f3da *R/zzz.R
 1b593080b4f4bddde590cdb5e05e15e0 *data/cepha.rda
 e97339325cb3bea8a9acf3bb4dd75682 *data/degelder.rda
 180d5b33067935ad0c723e99008789d8 *man/bucket.Rd
