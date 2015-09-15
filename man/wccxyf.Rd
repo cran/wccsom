@@ -64,10 +64,12 @@ wccxyf(data, Y, grid=somgrid(), rlen = 100, alpha = c(0.05, 0.01),
 \seealso{\code{\link[class]{SOM}}, \code{\link{plot.wccsom}},
   \code{\link{wccsom}}, \code{\link{wcc}}}
 \examples{
+\dontrun{
 data(degelder)
 gr <- somgrid(5, 5, "hexagonal")
 set.seed(7)
 x <- wccxyf(degelder$patterns, degelder$properties[,"cell.vol"],
             grid=gr, trwidth=20, rlen=100)
+}
 }
 \keyword{classif}

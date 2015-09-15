@@ -19,10 +19,12 @@
   University Nijmegen.  
 }
 \examples{
+\dontrun{
 data(degelder)
 set.seed(1)
 geldermap <- wccsom(degelder$patterns, somgrid(6, 6, "hexagonal"))
 options(digits = 3)
 summary(geldermap, "unit", nr=1, properties = degelder$properties)
+}
 }
 \keyword{datasets}

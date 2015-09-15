@@ -43,6 +43,7 @@
 \seealso{\code{\link{wccsom}}, \code{\link{wccxyf}},
   \code{\link{plot.wccsom}}}
 \examples{
+\dontrun{
 data(degelder)
 gr <- somgrid(5, 5, "hexagonal")
 set.seed(7)
@@ -54,5 +55,6 @@ predicted.volumes <- predict(x)
 plot(degelder$properties[,"cell.vol"], predicted.volumes$predictions,
      xlab="Cell volume", ylab="Predicted cell volume")
 abline(0,1, col="gray")
+}
 }
 \keyword{classif}

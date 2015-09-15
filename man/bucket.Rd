@@ -25,12 +25,15 @@ debucket(x, nout)
 \examples{
 data(cepha)
 gr <- somgrid(3,3, "hexagonal")
-set.seed(7)
-system.time(x <- wccsom(cepha$patterns, grid=gr, trwidth=20,
-                        rlen=500, FineTune=FALSE))
 
 X <- bucket(cepha$patterns, 4)
 system.time(x <- wccsom(X, grid=gr, trwidth=5,
                         rlen=500, FineTune=FALSE))
+## this is much faster than the following code:
+\dontrun{
+set.seed(7)
+system.time(x <- wccsom(cepha$patterns, grid=gr, trwidth=20,
+                        rlen=500, FineTune=FALSE))
+}
 }
 \keyword{classif}

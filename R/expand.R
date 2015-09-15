@@ -1,7 +1,7 @@
 ## create a new grid, same topology, twice as large
 ## interpolate for new units
 
-expand.som <- function(somnet, plotit=FALSE)
+expand <- function(somnet, plotit=FALSE)
 {
   if (plotit) cat("Creating new net...")
   oldxdim <- somnet$grid$xdim
@@ -33,10 +33,12 @@ expand.som <- function(somnet, plotit=FALSE)
       closeones <- order(nhbrdist[i, newindices])[1:nclose]
       closedists <- nhbrdist[i, newindices[closeones]]
       normfactor <- sum(1/closedists)
-      codes[i,] <- colSums(sweep(codes[newindices[closeones],],
-                                 2,
-                                 closedists,
-                                 FUN="*")) / normfactor
+      codes[i,] <- colSums(codes[newindices[closeones],] * closedists) /
+          normfactor
+      ## codes[i,] <- colSums(sweep(codes[newindices[closeones],],
+      ##                            2,
+      ##                            closedists,
+      ##                            FUN="*")) / normfactor
     }
   }
   

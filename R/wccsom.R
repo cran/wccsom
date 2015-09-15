@@ -119,7 +119,7 @@
 
 unit.distances <- function(grid, toroidal)
 {
-  if (!toroidal) return(as.matrix(stats::dist(grid$pts)))
+  if (!toroidal) return(as.matrix(dist(grid$pts)))
 
   np <- nrow(grid$pts)
   maxdiffx <- grid$xdim/2
